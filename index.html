@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Smart Baccarat Killer</title>
+
+<style>
+:root{
+  --bg-main:radial-gradient(circle at top,#1d2233,#0a0d14);
+  --glass:linear-gradient(180deg,rgba(25,32,55,.9),rgba(10,14,28,.9));
+  --border:rgba(120,140,255,.18);
+  --gold:#ffd86b;
+  --blue:#4da3ff;
+  --red:#ff6b6b;
+  --green:#4dffb0;
+}
+
+body{
+  font-family:"Segoe UI","Inter",Tahoma,sans-serif;
+  background:var(--bg-main);
+  color:#eef1ff;
+  margin:0;
+  letter-spacing:.2px
+}
+
+/* ===== LOGIN ===== */
+#loginBox{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-main);
+  z-index:9999
+}
+.loginPanel{
+  background:var(--glass);
+  padding:30px 34px;
+  border-radius:18px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 20px 50px rgba(0,0,0,.7);
+  width:320px;
+  text-align:center;
+  backdrop-filter:blur(6px)
+}
+.loginPanel h3{
+  margin:0 0 18px;
+  font-weight:600;
+  letter-spacing:.5px
+}
+.loginPanel input{
+  width:100%;
+  padding:12px 14px;
+  margin:7px 0;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#0b1020;
+  color:#fff;
+  font-size:15px;
+  outline:none
+}
+.loginPanel input:focus{
+  border-color:#6a7dff;
+  box-shadow:0 0 0 2px rgba(106,125,255,.25)
+}
+.loginPanel button{
+  width:100%;
+  margin-top:14px;
+  padding:13px;
+  font-size:15px;
+  font-weight:600;
+  background:linear-gradient(135deg,#3b7cff,#6aa7ff);
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  cursor:pointer
+}
+.loginErr{color:#ff7a7a;font-size:13px;margin-top:10px}
+
+/* ===== PROGRAM ===== */
+#app{display:none}
+
+header{
+  background:linear-gradient(90deg,#0f1426,#1a2140);
+  padding:18px;
+  text-align:center;
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.7),
+    inset 0 -1px 0 var(--border)
+}
+header h2{
+  margin:0;
+  font-weight:600;
+  letter-spacing:.6px
+}
+header div{
+  font-size:13px;
+  color:#b7c4ff
+}
+.expire{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--gold)
+}
+
+button{
+  padding:15px 28px;
+  margin:6px;
+  font-size:15px;
+  font-weight:600;
+  border:none;
+  border-radius:14px;
+  cursor:pointer
+}
+.player{background:linear-gradient(135deg,#2b7cff,#5fa8ff)}
+.banker{background:linear-gradient(135deg,#ff5f5f,#ff8a8a)}
+.tie{background:linear-gradient(135deg,#39e7a0,#6bffc5)}
+.util{background:linear-gradient(135deg,#5b627a,#7a84a6)}
+
+.section{
+  padding:20px;
+  max-width:1000px;
+  margin:auto
+}
+
+.summary{
+
+margin-top:8px;
+
+padding:6px 8px;
+
+background:var(--glass);
+
+border-left:2px solid var(--gold);
+
+border-radius:8px;
+
+box-shadow:
+0 0 0 1px var(--border),
+0 4px 10px rgba(0,0,0,.35);
+
+font-size:10px;
+
+line-height:1.25;
+
+max-width:220px;
+
+}
+.roadBox{
+  margin-top:16px;
+  padding:14px;
+  background:var(--glass);
+  border-radius:16px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 10px 25px rgba(0,0,0,.55);
+  min-width:120px;
+  max-width:260px;
+  flex-shrink:0;
+
+  overflow-x:auto;          /* 🔥 เลื่อนเมื่อยาว */
+}
+
+.roadBox b{
+  display:block;
+  margin-bottom:6px;
+  color:var(--gold)
+}
+
+.road{
+  display:grid;
+  grid-auto-flow:column;
+  grid-template-rows:repeat(6,26px);
+  grid-auto-columns:26px;
+  gap:0;
+  width:max-content;        /* 🔥 ทำให้กริดกว้างตามจำนวนคอลัมน์จริง */
+}
+
+.dot{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+}
+.dot.B{background:#ff5a5a}
+.dot.P{background:#2a7fff}
+.dot.T{background:#42e695}
+
+.lines{margin-top:18px}
+.line{
+  margin:14px 0;
+  padding:12px 14px;
+  background:var(--glass);
+  border-radius:16px
+}
+.best{box-shadow:0 0 18px rgba(77,255,176,.45)}
+
+.history{
+  display:grid;
+  grid-template-columns:repeat(12,22px);
+  gap:6px;
+  margin-top:8px
+}
+.mark{
+  width:22px;height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  border-radius:6px
+}
+.hit{background:#26e36f;color:#062b17}
+.miss{background:#ff4d4d;color:#fff}
+
+.betB{color:#ff9b9b;font-weight:700}
+.betP{color:#8ec5ff;font-weight:700}
+.betN{color:#888}
+
+@keyframes blinkScale{
+  0%{transform:scale(1.8);opacity:1}
+  50%{transform:scale(1.8);opacity:.25}
+  100%{transform:scale(1.8);opacity:1}
+}
+.blink{display:inline-block;animation:blinkScale 1s infinite}
+
+/* ===== PREMIUM MIN LOSE BOX ===== */
+.premiumBox{
+  margin-top:18px;
+  padding:26px;
+  border-radius:22px;
+
+  font-size:35px;          /* 🔥 ใหญ่ขึ้น */
+  line-height:1.8;
+
+  background:linear-gradient(135deg,#1c2448,#0e1330);
+  border:1px solid rgba(255,215,120,.5);
+
+  box-shadow:
+    0 0 0 1px rgba(255,215,120,.2),
+    0 0 40px rgba(255,215,120,.5),
+    0 15px 40px rgba(0,0,0,.7);
+}
+
+.premiumBox::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at top right,rgba(255,215,120,.25),transparent 60%);
+  pointer-events:none;
+}
+
+.premiumTitle{
+  font-weight:700;
+  font-size:15px;
+  color:#ffd86b;
+  letter-spacing:.5px;
+}
+
+.premiumContent{
+  margin-top:10px;
+  font-size:15px;
+}
+
+.premiumBet{
+  font-size:22px;
+  font-weight:900;
+}
+
+.premiumGlow{
+  animation:premiumBlink 1.2s infinite;
+}
+
+@keyframes premiumBlink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
+
+/* ===== ULTRA PREMIUM ASSISTANT ===== */
+
+.ultraBox{
+  margin-top:22px;
+  padding:30px;
+  border-radius:26px;
+
+  font-size:30px;        /* 🔥 ใหญ่ขึ้น */
+
+  background:linear-gradient(135deg,#ff00cc,#3333ff);
+  background-size:200% 200%;
+  animation:ultraBG 6s ease infinite;
+
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.2),
+    0 0 50px rgba(255,0,200,.8),
+    0 0 80px rgba(0,100,255,.8);
+}
+
+@keyframes ultraBG{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+.ultraTitle{
+  font-weight:900;
+  font-size:16px;
+  letter-spacing:.6px;
+}
+
+.ultraContent{
+  margin-top:10px;
+  font-size:15px;
+  line-height:1.5;
+}
+
+.ultraStrong{
+  font-size:20px;
+  font-weight:900;
+}
+
+
+/* ===== GLOBAL GLOW ===== */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(77,163,255,.15),transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(255,0,200,.12),transparent 40%);
+  pointer-events:none;
+  animation:bgMove 12s linear infinite;
+}
+@keyframes bgMove{
+  0%{transform:translate(0,0)}
+  50%{transform:translate(-40px,-20px)}
+  100%{transform:translate(0,0)}
+}
+
+/* ===== HEADER GLOW ===== */
+header{
+  position:relative;
+  overflow:hidden;
+}
+header::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.2),transparent);
+  transform:translateX(-100%);
+  animation:shine 5s infinite;
+}
+@keyframes shine{
+  100%{transform:translateX(100%)}
+}
+
+/* ===== BUTTON PREMIUM ===== */
+button{
+  position:relative;
+  overflow:hidden;
+  transition:.25s;
+}
+button:hover{
+  transform:translateY(-2px) scale(1.05);
+  box-shadow:
+    0 0 20px rgba(255,255,255,.25),
+    0 0 40px rgba(77,163,255,.4);
+}
+button::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.4),transparent);
+  transform:translateX(-100%);
+}
+button:hover::after{
+  animation:shine 1s;
+}
+
+/* ===== DOT EFFECT (ลูกบีดวิบวับ) ===== */
+.dot{
+  position:relative;
+  box-shadow:0 0 6px rgba(255,255,255,.2);
+}
+.dot.B{box-shadow:0 0 8px #ff5a5a,0 0 20px rgba(255,90,90,.5)}
+.dot.P{box-shadow:0 0 8px #2a7fff,0 0 20px rgba(42,127,255,.5)}
+.dot.T{box-shadow:0 0 8px #42e695,0 0 20px rgba(66,230,149,.5)}
+
+.dot::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.6),transparent 70%);
+  opacity:.3;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.4}
+  50%{transform:scale(1.4);opacity:.1}
+  100%{transform:scale(1);opacity:.4}
+}
+
+/* ===== LINE CARD ANIMATION ===== */
+.line{
+  transition:.3s;
+  position:relative;
+}
+.line:hover{
+  transform:translateY(-3px) scale(1.02);
+  box-shadow:
+    0 0 25px rgba(77,255,176,.3),
+    0 10px 30px rgba(0,0,0,.6);
+}
+
+/* ===== BEST LINE GLOW ===== */
+.best{
+  animation:bestGlow 1.2s infinite alternate;
+}
+@keyframes bestGlow{
+  0%{box-shadow:0 0 10px rgba(77,255,176,.4)}
+  100%{box-shadow:0 0 25px rgba(77,255,176,.9)}
+}
+
+/* ===== HISTORY HIT/MISS FX ===== */
+.hit{
+  animation:popHit .4s;
+}
+.miss{
+  animation:shakeMiss .3s;
+}
+
+@keyframes popHit{
+  0%{transform:scale(.5)}
+  100%{transform:scale(1)}
+}
+@keyframes shakeMiss{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-2px)}
+  50%{transform:translateX(2px)}
+  75%{transform:translateX(-2px)}
+  100%{transform:translateX(0)}
+}
+
+/* ===== PREMIUM BOX UPGRADE ===== */
+.premiumBox{
+  animation:premiumGlow 3s infinite alternate;
+}
+@keyframes premiumGlow{
+  0%{box-shadow:0 0 15px rgba(255,215,120,.3)}
+  100%{box-shadow:0 0 40px rgba(255,215,120,.7)}
+}
+
+/* ===== ULTRA BOX INSANE EFFECT ===== */
+.ultraBox{
+  animation:ultraMove 8s ease infinite;
+}
+@keyframes ultraMove{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.03)}
+  100%{transform:scale(1)}
+}
+
+.ultraStrong{
+  animation:ultraBlink 1s infinite;
+}
+@keyframes ultraBlink{
+  0%{opacity:1}
+  50%{opacity:.3}
+  100%{opacity:1}
+}
+
+/* ===== SCROLL BAR STYLE ===== */
+::-webkit-scrollbar{
+  height:6px;
+}
+::-webkit-scrollbar-track{
+  background:#111;
+}
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(90deg,#4da3ff,#ff00cc);
+  border-radius:10px;
+}
+
+.winrateBig{
+  font-size:30px;
+  font-weight:900;
+  color:#4dffb0;
+  text-shadow:0 0 10px #4dffb0,0 0 25px rgba(77,255,176,.8);
+  animation:winBlink 1s infinite;
+  display:inline-block;
+}
+
+@keyframes winBlink{
+  0%{opacity:1;transform:scale(1)}
+  50%{opacity:.3;transform:scale(1.15)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+.ultraContent span{
+  display:inline-block;
+  padding:8px 20px;
+  border-radius:12px;
+  background:rgba(0,0,0,.3);
+}
+
+
+/* ===== AI DECISION BOX ===== */
+
+
+.aiReasonBox{
+
+margin-top:18px;
+
+padding:16px;
+
+border-radius:18px;
+
+
+background:
+linear-gradient(
+135deg,
+rgba(30,40,80,.95),
+rgba(5,10,25,.95)
+);
+
+
+border:1px solid rgba(255,215,100,.4);
+
+
+box-shadow:
+0 0 25px rgba(255,215,100,.3);
+
+
+font-size:14px;
+
+}
+
+
+
+.aiReasonTitle{
+
+color:#ffd86b;
+
+font-weight:900;
+
+font-size:16px;
+
+}
+
+
+
+.aiPick{
+
+font-size:34px;
+
+font-weight:900;
+
+margin:8px 0;
+
+}
+
+
+
+.aiGood{
+
+color:#4dffb0;
+
+}
+
+
+
+.aiWarn{
+
+color:#ffd86b;
+
+}
+
+
+
+.aiBad{
+
+color:#ff6b6b;
+
+}
+
+
+/* ===== ใส่ตรงนี้ ===== */
+
+.metaBox{
+
+position:fixed;
+top:20px;
+right:20px;
+
+width:240px;
+
+padding:14px;
+
+border-radius:18px;
+
+background:
+linear-gradient(
+135deg,
+rgba(20,30,70,.95),
+rgba(5,10,25,.95)
+);
+
+border:1px solid rgba(120,160,255,.35);
+
+box-shadow:
+0 0 0 1px rgba(255,255,255,.05),
+0 10px 35px rgba(0,0,0,.7),
+0 0 25px rgba(77,163,255,.35);
+
+z-index:5000;
+
+backdrop-filter:blur(10px);
+
+font-size:13px;
+
+}
+
+
+.metaTitle{
+font-weight:900;
+color:#ffd86b;
+font-size:14px;
+}
+
+
+.metaScore{
+
+font-size:34px;
+font-weight:900;
+
+color:#4dffb0;
+
+text-shadow:
+0 0 10px #4dffb0;
+
+}
+
+
+.metaPick{
+
+font-size:22px;
+font-weight:900;
+
+}
+
+
+/* META PICK COLORS */
+
+.metaBanker{
+
+color:#ff5a5a;
+
+text-shadow:
+0 0 10px #ff5a5a,
+0 0 25px rgba(255,90,90,.8);
+
+}
+
+
+
+.metaPlayer{
+
+color:#2a7fff;
+
+text-shadow:
+0 0 10px #2a7fff,
+0 0 25px rgba(42,127,255,.8);
+
+}
+
+
+.metaRow{
+
+margin-top:5px;
+color:#cbd5ff;
+
+}
+/* ===== MINI BEAD ROAD SMALL LEFT TOP ===== */
+.miniRoadBox{
+
+
+position:relative;
+
+
+width:145px;
+
+
+padding:10px;
+
+
+border-radius:14px;
+
+
+background:
+linear-gradient(
+135deg,
+rgba(25,35,70,.95),
+rgba(5,10,25,.95)
+);
+
+
+border:1px solid rgba(255,215,100,.35);
+
+
+box-shadow:
+0 0 0 1px rgba(255,255,255,.05),
+0 8px 20px rgba(0,0,0,.6),
+0 0 18px rgba(255,215,100,.25);
+
+
+backdrop-filter:blur(8px);
+
+
+font-size:11px;
+
+
+flex-shrink:0;
+
+
+}
+
+/* หัวข้อ */
+
+.miniTitle{
+
+font-weight:900;
+
+color:#ffd86b;
+
+font-size:11px;
+
+margin-bottom:5px;
+
+text-align:center;
+
+}
+
+
+
+
+
+/* ตาราง bead เล็ก */
+
+.miniRoad{
+
+
+display:grid;
+
+
+grid-auto-flow:column;
+
+
+grid-template-rows:repeat(6,11px);
+
+
+grid-auto-columns:11px;
+
+
+gap:2px;
+
+
+width:max-content;
+
+
+max-width:120px;
+
+
+overflow:hidden;
+
+
+}
+
+
+
+
+.miniDot{
+
+
+width:11px;
+
+
+height:11px;
+
+
+border-radius:50%;
+
+
+}
+
+
+
+.miniDot.B{
+
+background:#ff5a5a;
+
+box-shadow:0 0 5px #ff5a5a;
+
+}
+
+
+
+.miniDot.P{
+
+background:#2a7fff;
+
+box-shadow:0 0 5px #2a7fff;
+
+}
+
+
+
+.miniDot.T{
+
+background:#42e695;
+
+box-shadow:0 0 5px #42e695;
+
+}
+
+
+
+
+.miniStat{
+
+
+margin-top:6px;
+
+
+font-size:10px;
+
+
+line-height:1.4;
+
+
+color:#cbd5ff;
+
+}
+
+
+.miniStat b{
+
+
+font-size:11px;
+
+}
+
+
+.miniP{
+
+color:#2a7fff;
+
+}
+
+
+.miniB{
+
+color:#ff5a5a;
+
+}
+
+
+.miniT{
+
+color:#42e695;
+
+}
+/* ===== FLOAT BUTTON BAR ===== */
+
+.controlBar{
+
+position:fixed;
+
+bottom:18px;
+left:50%;
+
+transform:translateX(-50%);
+
+
+display:flex;
+
+gap:10px;
+
+
+padding:12px 16px;
+
+
+background:
+linear-gradient(
+135deg,
+rgba(20,30,70,.95),
+rgba(5,10,25,.95)
+);
+
+
+border:1px solid rgba(255,255,255,.15);
+
+
+border-radius:25px;
+
+
+box-shadow:
+
+0 0 0 1px rgba(255,255,255,.05),
+0 15px 40px rgba(0,0,0,.8),
+0 0 30px rgba(77,163,255,.35);
+
+
+
+z-index:6000;
+
+
+backdrop-filter:blur(12px);
+
+
+
+max-width:95vw;
+
+
+overflow-x:auto;
+
+
+}
+
+
+.controlBar button{
+
+
+min-width:90px;
+
+
+height:50px;
+
+
+padding:0 18px;
+
+
+margin:0;
+
+
+border-radius:16px;
+
+
+font-size:14px;
+
+
+font-weight:900;
+
+
+
+flex-shrink:0;
+
+
+}
+
+
+
+.controlBar::-webkit-scrollbar{
+
+height:4px;
+
+}
+
+
+
+/* มือถือ */
+
+@media(max-width:600px){
+
+
+.controlBar{
+
+bottom:12px;
+
+gap:8px;
+
+padding:10px;
+
+
+}
+
+
+.controlBar button{
+
+min-width:78px;
+
+font-size:12px;
+
+
+height:46px;
+
+}
+
+
+
+}
+.summary hr{
+
+margin:4px 0;
+
+border-color:rgba(255,255,255,.15);
+
+}
+</style>
+</head>
+
+<body>
+
+
+
+
+<!-- เพิ่มตรงนี้ -->
+
+<div class="metaBox">
+
+<div class="metaTitle">
+  META AI SCORE
+</div>
+
+
+<div id="metaScore"
+class="metaScore">
+0%
+</div>
+
+
+<div id="metaPick"
+class="metaPick">
+รอวิเคราะห์
+</div>
+
+
+<div id="metaDetail"
+class="metaRow">
+กำลังเก็บข้อมูล...
+</div>
+
+
+</div>
+
+
+<!-- ของเดิม -->
+<div id="loginBox">
+
+  <div class="loginPanel">
+    <h3>🔐 Premium Login</h3>
+    <input id="user" placeholder="User">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">เข้าสู่ระบบ</button>
+    <div id="loginErr" class="loginErr"></div>
+  </div>
+</div>
+
+<div id="app">
+<header>
+  <h2>📊 Smart Baccarat Killer อัพเดท 10 สาย จำอดีต แต่ฟอร์มสด</h2>
+  <div>Professional Analysis System</div>
+  <div class="expire">⏳ วันหมดอายุ : 4 กรกฎาคม 2569</div>
+</header>
+
+<div class="controlBar">
+
+<button class="player" onclick="add('P')">
+PLAYER
+</button>
+
+<button class="banker" onclick="add('B')">
+BANKER
+</button>
+
+<button class="tie" onclick="add('T')">
+TIE
+</button>
+
+<button class="util" onclick="undo()">
+↩ UNDO
+</button>
+
+<button class="util" onclick="clearAll()">
+🗑 CLEAR
+</button>
+
+</div>
+
+<div class="section" style="display:flex;gap:20px;align-items:flex-start;flex-wrap:nowrap">
+<div>
+<!-- MINI BEAD ROAD -->
+
+<div class="miniRoadBox">
+
+
+<div class="miniTitle">
+ MINI BEAD ROAD
+</div>
+
+
+<div id="miniRoad"
+class="miniRoad">
+</div>
+
+
+
+<div id="miniStat"
+class="miniStat">
+
+P:0 |
+B:0 |
+T:0
+<br>
+TOTAL:0
+
+</div>
+
+
+</div>
+
+  <!-- summary -->
+  <div id="summary" class="summary"></div>
+
+  <div id="minLoseBox" class="premiumBox">
+  <div class="premiumTitle">🔥 PREMIUM • สายเคยผิดติดน้อย</div>
+  <div id="minLoseContent" class="premiumContent">
+    รอข้อมูล...
+  </div>
+</div>
+
+
+<div id="ultraBox" class="ultraBox">
+  <div class="ultraTitle">🚀 กล่องผู้ช่วย ULTRA PREMIUM ASSISTANT</div>
+  <div id="ultraContent" class="ultraContent">
+    รอการวิเคราะห์...
+  </div>
+</div>
+<div class="aiReasonBox">
+
+
+<div class="aiReasonTitle">
+
+ AI DECISION ENGINE
+
+</div>
+
+
+
+<div id="aiPick"
+class="aiPick">
+
+รอวิเคราะห์
+
+</div>
+
+
+
+<div id="aiReason">
+
+กำลังเก็บข้อมูล...
+
+</div>
+
+
+</div>
+
+  <!-- roadBox -->
+  <div class="roadBox">
+    <b>บีดโรด</b>
+    <div id="road" class="road"></div>
+  </div>
+
+</div>
+
+
+<div class="lines" id="lines" style="flex:1"></div>
+</div>
+</div>
+
+<script>
+/* ===== EXPIRATION ===== */
+/* หมดอายุ 4 กรกฎาคม 2026 เวลาไทย 23:59:59 */
+const expireDate = new Date(2026,6,04,23,59,59);
+// JS เดือนเริ่ม 0 -> 11 = ธันวาคม
+
+function checkExpire(){
+
+  const now = Date.now();
+
+  if(now >= expireDate.getTime()){
+    document.body.innerHTML = `
+      <h2 style="
+        color:#ff6b6b;
+        text-align:center;
+        margin-top:20%;
+        font-size:38px">
+        ⛔ โปรแกรมหมดอายุแล้ว
+      </h2>
+    `;
+    return true;
+  }
+
+  return false;
+}
+
+/* ตรวจหมดอายุก่อนให้ระบบทำงาน */
+if(!checkExpire()){
+
+
+/* ===== LOGIN ===== */
+function login(){
+  const userInput = document.getElementById("user");
+  const passInput = document.getElementById("pass");
+  const loginBoxEl = document.getElementById("loginBox");
+  const appEl = document.getElementById("app");
+  const loginErrEl = document.getElementById("loginErr");
+
+  if(userInput.value==="1234" && passInput.value==="1234"){
+    loginBoxEl.style.display="none";
+    appEl.style.display="block";
+    render();
+  }else{
+    loginErrEl.textContent="User หรือ Password ไม่ถูกต้อง";
+  }
+}
+
+/* ===== LOGIC เดิม 100% ===== */
+let road = [];
+
+let lines = Array.from({length:10}, () => ({
+
+  hit:0,
+  miss:0,
+  history:[],
+  bet:null,
+  pending:null,
+  pct:0
+}));
+
+function add(r){
+  lines.forEach(l=>{
+ if(l.pending && r !== 'T'){
+  if(l.pending === r){
+    l.hit++;
+    l.history.push('W');
+  }else{
+    l.miss++;
+    l.history.push('L');
+  }
+}
+
+  });
+  road.push(r);
+  predict().forEach((p,i)=>lines[i].bet=lines[i].pending=p);
+  render();
+}
+
+function undo(){if(!road.length)return;road.pop();recalc();}
+function clearAll(){
+  road=[];
+  lines.forEach(l=>Object.assign(l,{hit:0,miss:0,history:[],bet:null,pending:null,pct:0}));
+  render();
+}
+function recalc(){let t=[...road];clearAll();t.forEach(add);}
+
+function predict() {
+
+  // ✅ ตัด T ออกก่อน
+  let clean = road.filter(x => x !== 'T');
+
+  let p = clean.filter(x => x === 'P').length;
+  let b = clean.filter(x => x === 'B').length;
+  let last = clean.at(-1);
+
+  let r = new Array(10).fill(null);
+
+  // ===== Mirror Balance =====
+  let recent10 = clean.slice(-10);
+  let pRecent = recent10.filter(x => x === 'P').length;
+  let bRecent = recent10.filter(x => x === 'B').length;
+
+  // ===== 0 Balance =====
+  r[0] = b > p ? 'B' : 'P';
+
+  // ===== 1 Follow =====
+  r[1] = last || null;
+
+  // ===== 2 Opposite =====
+  r[2] = last ? (last === 'B' ? 'P' : 'B') : null;
+
+  // ===== streak =====
+  let s = 1;
+  for (let i = clean.length - 1; i > 0; i--) {
+    if (clean[i] === clean[i - 1]) s++;
+    else break;
+  }
+
+  // ===== 3 Streak Follow =====
+  r[3] = s >= 2 ? last : null;
+
+  // ===== 4 Streak Cut =====
+  r[4] = s >= 2 ? (last === 'B' ? 'P' : 'B') : null;
+
+  // ===== 5 Trend Break =====
+  r[5] = s >= 3 ? (last === 'B' ? 'P' : 'B') : null;
+
+  // ===== 6 Mirror 10 =====
+  if (recent10.length >= 4) {
+    if (pRecent > bRecent) r[6] = 'B';
+    else if (bRecent > pRecent) r[6] = 'P';
+    else r[6] = last || null;
+  }
+
+  // ===== 7 Anti Fake =====
+  let last4 = clean.slice(-4);
+  if (last4.length === 4) {
+    let pattern = last4.join('');
+    r[7] = (pattern === 'BPBP' || pattern === 'PBPB') ? null : last;
+  }
+
+  // ===== 8 Deep Break =====
+  if (s >= 4) {
+    let recent5 = clean.slice(-5);
+    let same = recent5.filter(x => x === last).length;
+    if (same >= 4) r[8] = last === 'B' ? 'P' : 'B';
+  }
+
+// ===== 9 ULTRA LOCK (แทงทุกตา 100%) =====
+let recent6 = clean.slice(-6);
+
+// 🔥 ไม่มีข้อมูลเลย
+if (recent6.length === 0) {
+  r[9] = 'P'; // เปิด P ตายตัว
+}
+else {
+
+  let score = 0;
+
+  recent6.forEach((x, i) => {
+    let w = i + 1;
+    score += x === 'P' ? w : -w;
+  });
+
+  // 🔥 ถ้า score = 0 → ใช้ last (กันแกว่ง)
+  if (score === 0) {
+    if (last) {
+      r[9] = last === 'P' ? 'B' : 'P';
+    } else {
+      r[9] = 'P'; // กัน undefined
+    }
+  } else {
+    r[9] = score > 0 ? 'P' : 'B';
+  }
+}
+
+// ===== 🔥 กันปิงปอง (override ทุกกรณี) =====
+let pattern = clean.slice(-6).join('');
+if (/PBPBPB|BPBPBP/.test(pattern)) {
+  if (last) {
+    r[9] = last === 'P' ? 'B' : 'P';
+  } else {
+    r[9] = 'P';
+  }
+}
+
+// ===== 🔒 FINAL LOCK (กันหลุด 100%) =====
+if (r[9] !== 'P' && r[9] !== 'B') {
+  r[9] = last ? (last === 'P' ? 'B' : 'P') : 'P';
+}
+
+  // ===== Safe Mode =====
+  if (r[7] === null) {
+    r[8] = null;
+  }
+
+  return r;
+}
+
+ function renderRoad(){
+  let html='';
+  let totalCols=Math.ceil(road.length/6);
+
+  for(let c=0;c<totalCols;c++){
+    for(let r=0;r<6;r++){
+      let index=c*6+r;
+      let val=road[index];
+
+      html+= val
+        ? `<div class="dot ${val}"></div>`
+        : `<div class="dot"></div>`;  // ให้ขนาดเท่ากัน
+    }
+  }
+
+  roadEl.innerHTML=html;
+}
+const summary = document.getElementById('summary');
+const linesEl = document.getElementById('lines');
+const roadEl = document.getElementById('road');
+function aiDecision(){
+
+
+let clean =
+road.filter(x=>x!=="T");
+
+
+
+if(clean.length < 5){
+
+return {
+
+pick:"รอข้อมูล",
+
+score:0,
+
+reason:
+"ข้อมูลยังไม่พอ"
+
+}
+
+}
+
+
+
+let recent =
+clean.slice(-6);
+
+
+
+let p =
+recent.filter(x=>x==="P").length;
+
+
+let b =
+recent.filter(x=>x==="B").length;
+
+
+
+let scoreP=50;
+
+let scoreB=50;
+
+
+
+let reason=[];
+
+
+
+// ดู 6 ตาล่าสุด
+
+
+if(p>b){
+
+scoreP+=15;
+
+reason.push(
+"✅ PLAYER ครอง 6 ตาล่าสุด"
+);
+
+}
+
+
+if(b>p){
+
+scoreB+=15;
+
+reason.push(
+"✅ BANKER ครอง 6 ตาล่าสุด"
+);
+
+}
+
+
+
+// ดูสตรีค
+
+
+let last =
+clean.at(-1);
+
+
+let streak=1;
+
+
+for(let i=clean.length-1;i>0;i--){
+
+if(clean[i]==clean[i-1])
+
+streak++;
+
+else
+
+break;
+
+}
+
+
+
+if(streak>=3){
+
+
+if(last==="P"){
+
+scoreP+=15;
+
+reason.push(
+"🔥 PLAYER ต่อเนื่อง"
+);
+
+}else{
+
+scoreB+=15;
+
+reason.push(
+"🔥 BANKER ต่อเนื่อง"
+);
+
+}
+
+}
+
+
+
+// กันปิงปอง
+
+
+let pattern =
+clean.slice(-6).join("");
+
+
+
+if(
+pattern==="PBPBPB"||
+pattern==="BPBPBP"
+){
+
+
+scoreP-=20;
+
+scoreB-=20;
+
+
+reason.push(
+"⚠️ เจอปิงปอง"
+);
+
+
+}
+
+
+
+
+let pick =
+scoreP>scoreB?
+"PLAYER":
+"BANKER";
+
+
+
+return {
+
+
+pick,
+
+score:
+Math.max(scoreP,scoreB),
+
+
+reason:
+reason.join("<br>")
+
+
+}
+
+
+
+}
+
+
+function updateMetaAI(){
+
+let clean = road.filter(x=>x!=="T");
+
+if(clean.length < 3){
+
+document.getElementById("metaScore").innerHTML="0%";
+document.getElementById("metaPick").innerHTML="รอข้อมูล";
+document.getElementById("metaDetail").innerHTML="เก็บข้อมูลเพิ่ม";
+
+return;
+
+}
+
+
+let recent = clean.slice(-6);
+
+
+let p = recent.filter(x=>x==="P").length;
+let b = recent.filter(x=>x==="B").length;
+
+
+let scoreP = 50;
+let scoreB = 50;
+
+let reasonP=[];
+let reasonB=[];
+
+
+// ===== TREND 6 ลูก =====
+
+if(p>b){
+
+scoreP+=20;
+
+reasonP.push(
+"PLAYER มากกว่าใน 6 ตาล่าสุด +20"
+);
+
+}
+
+if(b>p){
+
+scoreB+=20;
+
+reasonB.push(
+"BANKER มากกว่าใน 6 ตาล่าสุด +20"
+);
+
+}
+
+
+
+// ===== STREAK =====
+
+let last = clean.at(-1);
+
+let streak=1;
+
+
+for(let i=clean.length-1;i>0;i--){
+
+if(clean[i]===clean[i-1])
+
+streak++;
+
+else break;
+
+}
+
+
+
+if(streak>=2){
+
+if(last==="P"){
+
+scoreP+=15;
+
+reasonP.push(
+"PLAYER ต่อเนื่อง "+streak+" ตา +15"
+);
+
+}
+
+
+if(last==="B"){
+
+scoreB+=15;
+
+reasonB.push(
+"BANKER ต่อเนื่อง "+streak+" ตา +15"
+);
+
+}
+
+}
+
+
+
+// ===== ปิงปอง =====
+
+let pattern = clean.slice(-6).join("");
+
+if(
+pattern==="PBPBPB" ||
+pattern==="BPBPBP"
+){
+
+scoreP-=20;
+scoreB-=20;
+
+
+reasonP.push(
+"เจอปิงปอง -20"
+);
+
+reasonB.push(
+"เจอปิงปอง -20"
+);
+
+}
+
+
+
+
+// ===== FINAL =====
+
+let final;
+
+let score;
+
+let detail;
+
+
+if(scoreP>scoreB){
+
+final="PLAYER";
+
+score=scoreP;
+
+detail=
+reasonP.join("<br>");
+
+}
+
+else{
+
+
+final="BANKER";
+
+score=scoreB;
+
+detail=
+reasonB.join("<br>");
+
+}
+
+
+
+// ===== แสดงผล =====
+
+document.getElementById("metaScore").innerHTML=
+Math.min(score,99)+"%";
+let metaPick =
+document.getElementById("metaPick");
+
+
+metaPick.innerHTML = final;
+
+
+if(final==="BANKER"){
+
+metaPick.className =
+"metaPick metaBanker";
+
+}
+
+else if(final==="PLAYER"){
+
+metaPick.className =
+"metaPick metaPlayer";
+
+}
+
+document.getElementById("metaPick").innerHTML=
+final;
+
+
+
+document.getElementById("metaDetail").innerHTML=
+(score>=70?
+
+"🟢 เข้าได้<br>":
+
+score>=55?
+
+"🟡 ระวัง<br>":
+
+"🔴 งดแทง<br>"
+)
++
+detail;
+
+
+}
+function renderMiniRoad(){
+
+
+let html='';
+
+
+let totalCols=Math.ceil(road.length/6);
+
+
+
+for(let c=0;c<totalCols;c++){
+
+
+for(let r=0;r<6;r++){
+
+
+let index=c*6+r;
+
+
+let val=road[index];
+
+
+
+html += val
+
+? `<div class="miniDot ${val}"></div>`
+
+: `<div></div>`;
+
+
+
+}
+
+}
+
+
+
+document.getElementById("miniRoad").innerHTML=html;
+
+
+
+let countP =
+road.filter(x=>x==="P").length;
+
+
+let countB =
+road.filter(x=>x==="B").length;
+
+
+let countT =
+road.filter(x=>x==="T").length;
+
+
+
+document.getElementById("miniStat").innerHTML=`
+
+<span class="miniP">
+P:${countP}
+</span>
+
+|
+
+<span class="miniB">
+B:${countB}
+</span>
+
+|
+
+<span class="miniT">
+T:${countT}
+</span>
+
+
+<br>
+
+
+<b>
+TOTAL:${road.length}
+</b>
+
+`;
+
+}
+function render(){
+
+
+let ai =
+aiDecision();
+
+
+
+let aiPick =
+document.getElementById("aiPick");
+
+
+let aiReason =
+document.getElementById("aiReason");
+
+
+
+if(aiPick){
+
+
+aiPick.innerHTML =
+ai.pick+" "+ai.score+"%";
+
+
+
+aiPick.className =
+"aiPick "+
+(
+ai.score>=75?
+"aiGood":
+ai.score>=60?
+"aiWarn":
+"aiBad"
+);
+
+
+
+aiReason.innerHTML =
+ai.reason;
+
+
+}
+
+
+
+updateMetaAI();
+
+
+renderRoad();
+
+renderMiniRoad();
+
+  // ===== % =====
+  lines.forEach(l=>{
+    let t=l.hit+l.miss;
+    l.pct=(l.bet&&t)?Math.round(l.hit/t*100):0;
+  });
+
+// ===== SUMMARY =====
+let active = lines.filter(l =>
+  (l.bet === 'B' || l.bet === 'P')
+);
+let maxAcc=active.length?Math.max(...active.map(l=>l.pct)):0;
+
+// ✅ ULTRA WINRATE
+let best = lines.filter(l=>l.pct === maxAcc);
+let ultraWin = best.reduce((a,l)=>a+l.hit,0);
+let ultraPlay = best.reduce((a,l)=>a+(l.hit+l.miss),0);
+
+let winrate = ultraPlay
+  ? Math.round(ultraWin / ultraPlay * 100)
+  : 0;
+
+let blinkLines=active.filter(l=>l.pct===maxAcc);
+let blinkP=blinkLines.filter(l=>l.bet==='P').length;
+let blinkB=blinkLines.filter(l=>l.bet==='B').length;
+
+// 🔥 count ไพ่
+let countP = road.filter(x=>x==='P').length;
+let countB = road.filter(x=>x==='B').length;
+let countT = road.filter(x=>x==='T').length;
+let total = road.length;
+
+
+summary.innerHTML=`
+📊 <b>เงื่อนไข</b><br>
+สาย % สูงสุด = ${maxAcc}%<br>
+Blink = ${blinkLines.length}<br>
+P:${blinkP} | B:${blinkB}<hr>
+
+🎯 สถิติไพ่<br>
+P = ${countP} | B = ${countB} | T = ${countT}<br>
+TOTAL = ${total} ตา<br>
+
+🔥 🔥 Winrate = <span class="winrateBig">${winrate}%</span>
+`;
+
+  // ===== LINES =====
+  linesEl.innerHTML=lines.map((l,i)=>{
+  let betTxt='–',betCls='betN';
+  if(l.bet==='B'){betTxt='B';betCls='betB'}
+  if(l.bet==='P'){betTxt='P';betCls='betP'}
+
+  let blink = (l.bet && l.pct === maxAcc);
+
+  // 🔥 NEW: render history H/M
+  let historyHTML = `
+    <div class="history">
+   ${l.history.slice(-24).map(h =>
+  `<div class="mark ${h==='W'?'hit':'miss'}">${h}</div>`
+).join('')}
+    </div>
+  `;
+
+  return `
+  <div class="line ${blink?'best':''}">
+    สาย ${i+1} :
+    <span class="${betCls} ${blink?'blink':''}">${betTxt}</span>
+    ✔${l.hit} ❌${l.miss} (${l.pct}%)
+
+    ${historyHTML}   <!-- 🔥 ตรงนี้ -->
+  </div>`;
+}).join('');
+
+  // ===== DOM =====
+  const minLoseContent = document.getElementById('minLoseContent');
+  const ultraContent = document.getElementById('ultraContent');
+
+  if(!minLoseContent || !ultraContent) return;
+
+  // ===== CANDIDATES =====
+  let candidates = lines
+  .filter(l => (l.bet==='B'||l.bet==='P') && (l.hit+l.miss)>=1)
+  .map((l,i)=>{
+
+    let loseMax = maxLoseStreak(l.history);
+    let loseNow = currentLoseStreak(l.history);
+
+    return {
+      index:i,
+      bet:l.bet,
+      pct:l.pct,
+      loseMax,
+      loseNow,
+      total:l.hit+l.miss,
+      score:(loseMax*2)+loseNow-(l.pct/10)
+    };
+  });
+
+  if(!candidates.length){
+    minLoseContent.innerHTML="รอข้อมูล...";
+    ultraContent.innerHTML="รอการวิเคราะห์...";
+    return;
+  }
+
+  // ===== BEST =====
+  let minScore = Math.min(...candidates.map(c=>c.score));
+  let bestLines = candidates.filter(c=>c.score===minScore);
+
+  // ===== PREMIUM =====
+  minLoseContent.innerHTML = bestLines.map(b=>{
+    let color=b.bet==='P'?'#8ec5ff':'#ff9b9b';
+
+    return `
+    สาย ${b.index+1}<br>
+<span style="
+  color:${color};
+  font-size:28px;          /* 🔥 ลดลง */
+  font-weight:900;
+  text-shadow:0 0 8px ${color};
+  animation:ultraBlink 1s infinite;
+">
+${b.bet}
+</span><br>
+    แพ้สูงสุด ${b.loseMax}<br>
+    แพ้ติด ${b.loseNow}<br>
+    SCORE ${b.score.toFixed(2)}
+    <hr>`;
+  }).join('');
+
+ // ===== ULTRA =====
+let pLines = bestLines.filter(b=>b.bet==='P');
+let bLines = bestLines.filter(b=>b.bet==='B');
+
+// 🔥 NEW: ถ้าไม่คละ → งดแทง
+if(pLines.length === 0 || bLines.length === 0){
+  ultraContent.innerHTML = "⛔ สีไม่คละ งดแทง";
+  return;
+}
+
+// 🔥 กันสายอ่อน (กรอง % ต่ำ)
+let strongP = pLines.filter(x=>x.pct>=50);
+let strongB = bLines.filter(x=>x.pct>=50);
+
+if(!strongP.length || !strongB.length){
+  ultraContent.innerHTML = "⚠️ คละจริง แต่ % อ่อน งดแทง";
+  return;
+}
+
+
+// 🔥 fallback ถ้าไม่มี bestLines
+if(!bestLines.length){
+  let last = road.at(-1);
+  if(last){
+    ultraContent.innerHTML = `🎯 ตัวแทง: ${last}`;
+  }else{
+    ultraContent.innerHTML = "รอไพ่ตาแรก";
+  }
+  return;
+}
+
+// 🔥 กันปิงปอง
+let isChop = /BPBPBP|PBPBPB/.test(road.slice(-6).join(''));
+if(isChop){
+  ultraContent.innerHTML="🚫 ปิงปอง งดแทง";
+  return;
+}
+
+// 🔥 พลัง
+let pPower = pLines.reduce((a,c)=>a+c.pct,0);
+let bPower = bLines.reduce((a,c)=>a+c.pct,0);
+
+// 🔥 fallback ถ้า power เท่ากัน
+let final;
+if(pPower===bPower){
+  final = road.at(-1) || 'P';
+}else{
+  final = pPower>bPower?'P':'B';
+}
+
+let color = final==='P'?'#8ec5ff':'#ff9b9b';
+
+ultraContent.innerHTML=`
+🎯 ตัวแทง:
+<span style="
+  color:${color};
+  font-size:40px;        /* 🔥 ลดลง */
+  font-weight:900;
+  text-shadow:0 0 12px ${color};
+  animation:ultraBlink 1s infinite;
+">
+${final}
+</span>
+
+📊 Power<br>
+P:${pPower} | B:${bPower}
+`;
+
+} // 🔥🔥🔥 <<<<<< ใส่ตรงนี้ (ปิด render)
+
+// ===== 🔥 NEW: CURRENT LOSE =====
+function currentLoseStreak(history){
+  let cur=0;
+  for(let i=history.length-1;i>=0;i--){
+    if(history[i]==='L') cur++;
+    else break;
+  }
+  return cur;
+}
+
+function maxLoseStreak(history){
+  let max=0,cur=0;
+  history.forEach(x=>{
+    if(x==='L'){
+      cur++;
+      if(cur>max) max=cur;
+    }else{
+      cur=0;
+    }
+  });
+  return max;
+}
+}
+</script>
+</body>
+</html>
